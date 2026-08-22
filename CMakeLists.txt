@@ -125,6 +125,31 @@ target_include_directories(ps14_repair_system PUBLIC
 
 target_link_libraries(ps14_repair_system PRIVATE ps14_shared)
 
+
+# ============================================================================
+# ADVANCED DETECTION SYSTEMS (Phase 2)
+# ============================================================================
+
+add_library(ps14_advanced STATIC
+    src/core/advanced/advanced.c
+    src/core/advanced/debugger_detector.c
+    src/core/advanced/hook_detector.c
+    src/core/advanced/tamper_detector.c
+    src/core/advanced/async_auditor.c
+    src/core/advanced/buffer_overflow.c
+)
+
+target_include_directories(ps14_advanced PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src/core/advanced
+)
+
+target_link_libraries(ps14_advanced PRIVATE
+    ps14_shared
+    ps14_memory_monitor
+    ps14_repair_system
+)
+
 # ============================================================================
 # CORE PROTECTION ENGINE (User Mode DLL)
 # ============================================================================
@@ -144,6 +169,7 @@ target_link_libraries(ps14_core PRIVATE
     ps14_integrity_check
     ps14_auth_gateway
     ps14_repair_system
+    ps14_advanced
 )
 
 # Windows-specific settings for DLL
@@ -274,6 +300,7 @@ if(BUILD_TESTS)
         tests/unit/test_integrity_check.c
         tests/unit/test_auth_gateway.c
         tests/unit/test_repair_system.c
+        tests/unit/advanced/test_advanced.c
         tests/unit/main.c
     )
     
@@ -289,6 +316,8 @@ if(BUILD_TESTS)
         ps14_integrity_check
         ps14_auth_gateway
         ps14_repair_system
+        ps14_advanced
+    ps14_advanced
     )
     
     if(WIN32)
