@@ -62,7 +62,6 @@ add_library(ps14_memory_monitor STATIC
     src/core/memory_monitor/memory_scanner.c
     src/core/memory_monitor/page_auditor.c
     src/core/memory_monitor/hash_database.c
-    src/core/memory_monitor/thread_pool.c
 )
 
 target_include_directories(ps14_memory_monitor PUBLIC
@@ -124,7 +123,6 @@ target_include_directories(ps14_repair_system PUBLIC
 )
 
 target_link_libraries(ps14_repair_system PRIVATE ps14_shared)
-
 
 # ============================================================================
 # ADVANCED DETECTION SYSTEMS (Phase 2)
@@ -239,117 +237,46 @@ endif()
 # KERNEL DRIVER (Kernel Mode - Separate Build)
 # ============================================================================
 
-# Kernel driver requires WDK and special settings
-# We'll create a separate CMakeLists.txt for kernel mode
-
 option(BUILD_KERNEL_DRIVER "Build kernel-mode driver" OFF)
 
 if(BUILD_KERNEL_DRIVER AND WIN32)
     message(STATUS "Configuring kernel driver...")
+    find_path(WDK_INCLUDE_DIR NAMES ntddk.h ntifs.h PATHS "${WDK_DIR}/inc/ddk" "${WDK_DIR}/inc")
     
-    # Kernel driver needs special compiler flags
-    add_definitions(-D_KERNEL_MODE -DDRIVER)
-    
-    add_library(ps14_driver MODULE
-        src/kernel/driver.c
-        src/kernel/memory_guard.c
-        src/kernel/process_watcher.c
-        src/kernel/callback_handler.c
-        src/kernel/shadow_pt_detector.c
-    )
-    
-    target_include_directories(ps14_driver PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src/kernel
-    )
-    
-    # Kernel driver doesn't link against standard libraries
-    set_target_properties(ps14_driver PROPERTIES
-        SUFFIX ".sys"
-        OUTPUT_NAME "ps14_driver"
-        POSITION_INDEPENDENT_CODE OFF
-    )
-    
-    # Disable standard library linking
-    set_target_properties(ps14_driver PROPERTIES
-        LINK_FLAGS "/NOIMPORTLIB /DRIVER /ENTRY:DriverEntry"
-    )
-    
-    message(STATUS "Kernel driver configured. Requires WDK for full build.")
+    if(WDK_INCLUDE_DIR)
+        add_definitions(-DPS14_MODE_KERNEL -DKERNEL_MODE)
+        
+        add_library(ps14_driver MODULE
+            src/kernel/driver.c
+            src/kernel/memory_guard.c
+            src/kernel/process_watcher.c
+            src/kernel/callback_handler.c
+            src/kernel/shadow_pt_detector.c
+        )
+        
+        target_include_directories(ps14_driver PRIVATE
+            ${CMAKE_SOURCE_DIR}/include
+            ${WDK_INCLUDE_DIR}
+        )
+        
+        set_target_properties(ps14_driver PROPERTIES
+            SUFFIX ".sys"
+            OUTPUT_NAME "ps14_driver"
+            POSITION_INDEPENDENT_CODE OFF
+        )
+        
+        set_target_properties(ps14_driver PROPERTIES
+            LINK_FLAGS "/NOIMPORTLIB /DRIVER /ENTRY:DriverEntry"
+        )
+        
+        message(STATUS "Kernel driver configured. Requires WDK for full build.")
+    else()
+        message(WARNING "WDK not found. Kernel driver will not be built.")
+    endif()
 endif()
-
-# ============================================================================
-# INCLUDE FILES (Headers)
-# ============================================================================
-
-# Create directory for generated headers
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/include/generated)
 
 # ============================================================================
 # TESTS
 # ============================================================================
 
-option(BUILD_TESTS "Build test programs" ON)
-
-if(BUILD_TESTS)
-    enable_testing()
-    
-    # Unit tests
-    add_executable(ps14_tests_unit
-        tests/unit/test_memory_monitor.c
-        tests/unit/test_integrity_check.c
-        tests/unit/test_auth_gateway.c
-        tests/unit/test_repair_system.c
-        tests/unit/advanced/test_advanced.c
-        tests/unit/main.c
-    )
-    
-    target_include_directories(ps14_tests_unit PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src
-        $
-    )
-    
-    target_link_libraries(ps14_tests_unit PRIVATE
-        ps14_shared
-        ps14_memory_monitor
-        ps14_integrity_check
-        ps14_auth_gateway
-        ps14_repair_system
-        ps14_advanced
-    ps14_advanced
-    )
-    
-    if(WIN32)
-        set_target_properties(ps14_tests_unit PROPERTIES
-            OUTPUT_NAME "ps14_tests_unit"
-        )
-    endif()
-    
-    # Integration tests
-    add_executable(ps14_tests_integration
-        tests/integration/main.c
-        tests/integration/test_client_server.c
-        tests/integration/test_memory_protection.c
-    )
-    
-    target_include_directories(ps14_tests_integration PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src
-    )
-    
-    target_link_libraries(ps14_tests_integration PRIVATE
-        ps14_shared
-        ps14_core
-    )
-    
-    if(WIN32)
-        set_target_properties(ps14_tests_integration PROPERTIES
-            OUTPUT_NAME "ps14_tests_integration"
-        )
-    endif()
-    
-    # Add tests to CTest
-    add_test(NAME ps14_unit_tests COMMAND ps14_tests_unit)
-    add_test(NAME ps14_integration_tests COMMAND ps14_tests_integration)
-endif()
+option(BUIL
