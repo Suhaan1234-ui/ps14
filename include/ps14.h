@@ -261,3 +261,12 @@ typedef enum Ps14HashAlgorithm {
 #define PS14_VERSION_MINOR 0
 #define PS14_VERSION_PATCH 0
 #define PS14_V
+
+// ============================================================================
+// STRING LIMITS
+// ============================================================================
+
+#define PS14_MAX_PATH 260
+#define PS14_MAX_NAME 64
+#define PS14_MAX_MESSAGE 256
+#define PS14_MAX_URL 512
