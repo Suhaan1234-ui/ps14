@@ -1,0 +1,65 @@
+# Build directories
+build/
+Build/
+bin/
+obj/
+*.user
+*.suo
+*.sdf
+*.opensdf
+
+# Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+Debug/
+Release/
+x64/
+Win32/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+
+# Compiled objects
+*.o
+*.a
+*.lib
+*.dll
+*.exe
+*.pdb
+*.idb
+*.ilk
+
+# Kernel driver
+*.sys
+*.inf
+*.cat
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# IDE
+.idea/
+.vs/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+tests/output/
+tests/results/
+
+# Documentation temporary files
+*.md~ 
+docs/*.bak
+
+# Local configuration
+config.local
+.env
