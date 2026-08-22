@@ -281,3 +281,46 @@ if(BUILD_TESTS)
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/src
         $
+    )
+    
+    target_link_libraries(ps14_tests_unit PRIVATE
+        ps14_shared
+        ps14_memory_monitor
+        ps14_integrity_check
+        ps14_auth_gateway
+        ps14_repair_system
+    )
+    
+    if(WIN32)
+        set_target_properties(ps14_tests_unit PROPERTIES
+            OUTPUT_NAME "ps14_tests_unit"
+        )
+    endif()
+    
+    # Integration tests
+    add_executable(ps14_tests_integration
+        tests/integration/main.c
+        tests/integration/test_client_server.c
+        tests/integration/test_memory_protection.c
+    )
+    
+    target_include_directories(ps14_tests_integration PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src
+    )
+    
+    target_link_libraries(ps14_tests_integration PRIVATE
+        ps14_shared
+        ps14_core
+    )
+    
+    if(WIN32)
+        set_target_properties(ps14_tests_integration PROPERTIES
+            OUTPUT_NAME "ps14_tests_integration"
+        )
+    endif()
+    
+    # Add tests to CTest
+    add_test(NAME ps14_unit_tests COMMAND ps14_tests_unit)
+    add_test(NAME ps14_integration_tests COMMAND ps14_tests_integration)
+endif()
